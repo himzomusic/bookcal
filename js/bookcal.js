@@ -1,9 +1,10 @@
 var bookcalApp = angular.module('bookcalApp', []);
 
 bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
-    $scope.bookingTimes = [];
-    $scope.nextDates = [];
-    $scope.currentDate = Date.now();
+    $scope.bookingTimes = [];//holds the booking times
+    $scope.nextDates = [];//holds a week forward from today
+    $scope.currentDate = Date.now();// holds the current selected date
+
     //Following values are constants and should be in the database and fetched from init
     $scope.workStart = 0;
     $scope.workEnd = 0;
@@ -32,6 +33,25 @@ bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
         $scope.currentDate = newDate;
         $scope.populateList();
     };
+    //sets done=true if there is any text in input field for specific booking time
+    $scope.updateBookingTimeDone = function(bookingTime){
+        bookingTime.booked = bookingTime.booked || bookingTime.text.length > 0;
+    };
+    //unbook the time
+    $scope.verifyUnbooking = function(bookingTime){
+        //if the booking time isn't booked just return
+        if (bookingTime.booked)
+            return true;
+        //show the confirmation and wait for answer
+        var confirmText = 'Du har valt att ta bort bokning kl ' + bookingTime.time + (bookingTime.text != '' ? ' (' + bookingTime.text + ')' : '') + '!\n\nVill du verkligen ta bort bokningen?';
+        if (confirm(confirmText)) {
+            //TODO: remove booking from the database
+            bookingTime.text = "";//clear the text
+        } else {
+            bookingTime.booked = true;//reverse action
+        }
+    };
+
     //populates the bookings list
     $scope.populateList = function() {
         //clear the list
@@ -45,10 +65,9 @@ bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
             var loop = 0;
             while (loop < loops) {
                 //TODO: populate the list with fetched bookings.
+                var formattedTimeForRow = (bookTime < 10 ? '0' : '') + bookTime + ':' + (loop == 0 ? "00" : loop*$scope.bookingInterval);
                 $scope.bookingTimes.push(
-                    {time:(bookTime < 10 ? '0' : '') + bookTime + ':' + (loop == 0 ? "00" : loop*$scope.bookingInterval),
-                        text:'',
-                        done:false});
+                    {time:formattedTimeForRow, text:'', booked:false});
                 loop++;
             }
             bookTime += 1;

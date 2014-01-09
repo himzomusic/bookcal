@@ -1,7 +1,7 @@
-.row {
-  padding-top: 5pt;
-}
 .panel-heading {
     text-align: center;
-    font-size: 16pt;
+    font-size: 12pt;
+}
+.booked_true {
+    background-color: #eee !important;
 }
