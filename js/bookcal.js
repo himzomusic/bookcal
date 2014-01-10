@@ -1,5 +1,5 @@
 /** App init **/
-var bookcalApp = angular.module('bookcalApp', ['ngRoute']);
+var bookcalApp = angular.module('bookcalApp', ['ngRoute', 'ngCookies']);
 
 /*** Router **/
 bookcalApp.config(['$routeProvider', function ($routeProvider) {
@@ -102,7 +102,7 @@ bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
 }]);
 
 /** Login controller **/
-bookcalApp.controller('LoginCtrl', ['$scope', '$location', 'UserService', function ($scope, $location, User) {
+bookcalApp.controller('LoginCtrl', ['$scope', '$location', '$cookieStore', 'UserService', function ($scope, $location, $cookieStore, User) {
     //TODO: remove 'test' values from declaration
     $scope.typedUsername = 'test';
     $scope.typedPassword = 'test';
@@ -118,6 +118,15 @@ bookcalApp.controller('LoginCtrl', ['$scope', '$location', 'UserService', functi
             User.username = '';
             alert('Felaktiga inloggningsuppgifter!');
         }
+        $cookieStore.put('username', User.username);
+        $cookieStore.put('isLogged', User.isLogged);
+    };
+    $scope.logout = function() {
+        User.isLogged = false;
+        User.username = '';
+        $cookieStore.put('username', User.isLogged);
+        $cookieStore.put('isLogged', User.username);
+        $location.path('/login');
     };
 }]);
 
@@ -130,9 +139,9 @@ bookcalApp.factory('UserService', function() {
     return sdo;
 });
 /** Directive checking login status **/
-bookcalApp.run(['$rootScope', '$location', 'UserService', function ($root, $location, User) {
+bookcalApp.run(['$rootScope', '$location', '$cookieStore', 'UserService', function ($root, $location, $cookieStore, User) {
             $root.$on('$routeChangeStart', function(event, currRoute, prevRoute){
-                if (!currRoute.access.isFree && !User.isLogged) {
+                if (!currRoute.access.isFree && (!User.isLogged && !$cookieStore.get('isLogged'))) {
                     $location.path('/login');
                 }
             });
