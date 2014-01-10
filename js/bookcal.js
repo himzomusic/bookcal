@@ -6,14 +6,20 @@ bookcalApp.config(['$routeProvider', function ($routeProvider) {
     $routeProvider
         .when('/login', {
             templateUrl: 'views/login.html',
-            controller: 'LoginCtrl'
+            controller: 'LoginCtrl',
+            access: {
+                isFree: true
+            }
         })
-        .when('/', {
+        .when('/booking', {
             templateUrl: 'views/bookingList.html',
-            controller: 'BookCalCtrl'
+            controller: 'BookCalCtrl',
+            access: {
+                isFree: false
+            }
         })
         .otherwise({
-            redirectTo: '/'
+            redirectTo: '/booking'
         });
 }]);
 
@@ -96,6 +102,36 @@ bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
 }]);
 
 /** Login controller **/
-bookcalApp.controller('LoginCtrl', ['$scope', function ($scope) {
-    //Hi
+bookcalApp.controller('LoginCtrl', ['$scope', '$location', 'UserService', function ($scope, $location, User) {
+    $scope.typedUsername = 'test';
+    $scope.typedPassword = 'test';
+    $scope.loginUser = function() {
+        if ($scope.typedUsername == 'test' && $scope.typedPassword == 'test') {
+            User.isLogged = true;
+            User.username = $scope.typedUsername;
+            $location.path('/booking');
+        } else {
+            $scope.typedPassword = '';
+            User.isLogged = false;
+            User.username = '';
+            alert('Felaktiga inloggningsuppgifter!');
+        }
+    };
+}]);
+
+/** UserService **/
+bookcalApp.factory('UserService', function() {
+    var sdo = {
+        isLogged: false,
+        username: ''
+    };
+    return sdo;
+});
+/** Directive checking login status **/
+bookcalApp.run(['$rootScope', '$location', 'UserService', function ($root, $location, User) {
+            $root.$on('$routeChangeStart', function(event, currRoute, prevRoute){
+                if (!currRoute.access.isFree && !User.isLogged) {
+                    $location.path('/login');
+                }
+            });
 }]);
