@@ -103,8 +103,10 @@ bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
 
 /** Login controller **/
 bookcalApp.controller('LoginCtrl', ['$scope', '$location', 'UserService', function ($scope, $location, User) {
+    //TODO: remove 'test' values from declaration
     $scope.typedUsername = 'test';
     $scope.typedPassword = 'test';
+    //TODO: retrieve username and password from the database to verify typed values
     $scope.loginUser = function() {
         if ($scope.typedUsername == 'test' && $scope.typedPassword == 'test') {
             User.isLogged = true;
