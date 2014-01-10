@@ -111,21 +111,23 @@ bookcalApp.controller('LoginCtrl', ['$scope', '$location', '$cookieStore', 'User
         if ($scope.typedUsername == 'test' && $scope.typedPassword == 'test') {
             User.isLogged = true;
             User.username = $scope.typedUsername;
+            $cookieStore.put('username', User.username);
+            $cookieStore.put('isLogged', User.isLogged);
             $location.path('/booking');
         } else {
             $scope.typedPassword = '';
             User.isLogged = false;
             User.username = '';
+            $cookieStore.remove('username');
+            $cookieStore.remove('isLogged');
             alert('Felaktiga inloggningsuppgifter!');
         }
-        $cookieStore.put('username', User.username);
-        $cookieStore.put('isLogged', User.isLogged);
     };
     $scope.logout = function() {
         User.isLogged = false;
         User.username = '';
-        $cookieStore.put('username', User.isLogged);
-        $cookieStore.put('isLogged', User.username);
+        $cookieStore.remove('username');
+        $cookieStore.remove('isLogged');
         $location.path('/login');
     };
 }]);
@@ -140,9 +142,9 @@ bookcalApp.factory('UserService', function() {
 });
 /** Directive checking login status **/
 bookcalApp.run(['$rootScope', '$location', '$cookieStore', 'UserService', function ($root, $location, $cookieStore, User) {
-            $root.$on('$routeChangeStart', function(event, currRoute, prevRoute){
-                if (!currRoute.access.isFree && (!User.isLogged && !$cookieStore.get('isLogged'))) {
-                    $location.path('/login');
-                }
-            });
+    $root.$on('$routeChangeStart', function(event, currRoute, prevRoute){
+        if (!currRoute.access.isFree && (!User.isLogged && !$cookieStore.get('isLogged'))) {
+            $location.path('/login');
+        }
+    });
 }]);
