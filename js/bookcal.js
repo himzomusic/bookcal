@@ -1,4 +1,16 @@
-var bookcalApp = angular.module('bookcalApp', []);
+var bookcalApp = angular.module('bookcalApp', ['ngRoute']);
+
+bookcalApp.config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
+    $routeProvider
+        .when('/bookcal/', {
+            templateUrl: 'views/bookingList.html',
+            controller: 'BookCalCtrl'
+        })
+        .otherwise({
+            redirectTo: '/bookcal/'
+        });
+    $locationProvider.html5Mode(true);
+}]);
 
 bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
     $scope.bookingTimes = [];//holds the booking times
@@ -73,4 +85,5 @@ bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
             bookTime += 1;
         }
     };
+    $scope.init();
 }]);
