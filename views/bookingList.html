@@ -29,9 +29,9 @@
                           {{bookingTime.time}}
                           </span>
                     <input type="text" value="{{bookingTime.text}}" class="form-control booked_{{bookingTime.booked}}" ng-model="bookingTime.text"
-                           ng-change="updateBookingTimeDone(bookingTime)" >
+                           ng-change="bookTime(bookingTime)" >
                          <span class="input-group-addon">
-                              <input type="checkbox" ng-model="bookingTime.booked" ng-change="verifyUnbooking(bookingTime)">
+                              <input type="checkbox" ng-model="bookingTime.booked" ng-change="removeBooking(bookingTime)">
                           </span>
                 </div><!-- /input-group -->
             </div><!-- /.col-lg-# -->

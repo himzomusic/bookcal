@@ -1,17 +1,23 @@
+/** App init **/
 var bookcalApp = angular.module('bookcalApp', ['ngRoute']);
 
-bookcalApp.config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
+/*** Router **/
+bookcalApp.config(['$routeProvider', function ($routeProvider) {
     $routeProvider
-        .when('/bookcal/', {
+        .when('/login', {
+            templateUrl: 'views/login.html',
+            controller: 'LoginCtrl'
+        })
+        .when('/', {
             templateUrl: 'views/bookingList.html',
             controller: 'BookCalCtrl'
         })
         .otherwise({
-            redirectTo: '/bookcal/'
+            redirectTo: '/'
         });
-    $locationProvider.html5Mode(true);
 }]);
 
+/** Booking controller **/
 bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
     $scope.bookingTimes = [];//holds the booking times
     $scope.nextDates = [];//holds a week forward from today
@@ -45,12 +51,13 @@ bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
         $scope.currentDate = newDate;
         $scope.populateList();
     };
-    //sets done=true if there is any text in input field for specific booking time
-    $scope.updateBookingTimeDone = function(bookingTime){
+    //books the time
+    $scope.bookTime = function(bookingTime){
+        //TODO: add booking to the database
         bookingTime.booked = bookingTime.booked || bookingTime.text.length > 0;
     };
-    //unbook the time
-    $scope.verifyUnbooking = function(bookingTime){
+    //remove booking the time
+    $scope.removeBooking = function(bookingTime){
         //if the booking time isn't booked just return
         if (bookingTime.booked)
             return true;
@@ -86,4 +93,9 @@ bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
         }
     };
     $scope.init();
+}]);
+
+/** Login controller **/
+bookcalApp.controller('LoginCtrl', ['$scope', function ($scope) {
+    //Hi
 }]);
