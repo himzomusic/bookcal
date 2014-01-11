@@ -24,7 +24,7 @@ bookcalApp.config(['$routeProvider', function ($routeProvider) {
 }]);
 
 /** Booking controller **/
-bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
+bookcalApp.controller('BookCalCtrl', ['$scope', '$http', '$filter', function ($scope, $http, $filter) {
     $scope.bookingTimes = [];//holds the booking times
     $scope.nextDates = [];//holds a week forward from today
     $scope.currentDate = Date.now();// holds the current selected date
@@ -35,12 +35,12 @@ bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
     $scope.bookingInterval = 0;
 
     //runs when the page is loaded
-    $scope.init = function() {
+    var init = function() {
         //Following values are constants and should be in the database and fetched from init
         $scope.workStart = 8;
         $scope.workEnd = 20; //end hour
         $scope.bookingInterval = 20; //interval in minutes. Must be divisible with 60!
-        $scope.populateList();
+        getBookings();
 
         //add date buttons
         for (var i=0; i<7; i++) {
@@ -50,12 +50,12 @@ bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
     //increases or decreases the date buy the number of days passed
     $scope.calculateDate = function(numOfDays){
         $scope.currentDate += (numOfDays * 24 * 60 * 60 * 1000);
-        $scope.populateList();
+        getBookings();
     };
     //sets the current date to the passed date
     $scope.setDate = function(newDate){
         $scope.currentDate = newDate;
-        $scope.populateList();
+        getBookings();
     };
     //books the time
     $scope.bookTime = function(bookingTime){
@@ -76,13 +76,27 @@ bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
             bookingTime.booked = true;//reverse action
         }
     };
-
+    //fetches the bookings for the current date
+    var getBookings = function() {
+        $http({method: 'GET', url: 'getBookings.php?day=' + $filter('date')($scope.currentDate, "yyyy-MM-dd")}).
+            success(function(data) {
+                populateList(data);
+            }).
+            error(function(data) {
+                populateList([]);
+            });
+    };
+    //loops through the list of bookings searching for the booking on specific time
+    var findByTime = function(dataFromDB, time) {
+        for (var i = 0; i < dataFromDB.length; i++) {
+            if (time == dataFromDB[i].time)
+                return dataFromDB[i];
+        }
+    };
     //populates the bookings list
-    $scope.populateList = function() {
+    var populateList = function(dataFromDB) {
         //clear the list
         $scope.bookingTimes = [];
-
-        //TODO: get all bookings for the current date
 
         var bookTime = $scope.workStart = 8;
         while (bookTime <= $scope.workEnd) {
@@ -91,14 +105,18 @@ bookcalApp.controller('BookCalCtrl', ['$scope', function ($scope) {
             while (loop < loops) {
                 //TODO: populate the list with fetched bookings.
                 var formattedTimeForRow = (bookTime < 10 ? '0' : '') + bookTime + ':' + (loop == 0 ? "00" : loop*$scope.bookingInterval);
-                $scope.bookingTimes.push(
-                    {time:formattedTimeForRow, text:'', booked:false});
+                var booking = findByTime(dataFromDB, formattedTimeForRow);
+                if (booking) {
+                    $scope.bookingTimes.push({time:formattedTimeForRow, text:booking.text, booked:true});
+                } else {
+                    $scope.bookingTimes.push({time:formattedTimeForRow, text:'', booked:false});
+                }
                 loop++;
             }
             bookTime += 1;
         }
     };
-    $scope.init();
+    init();
 }]);
 
 /** Login controller **/
