@@ -18,13 +18,13 @@ $i = 0;
 //print JSON
 header('Content-type: text/json');
 header('Content-type: application/json');
-echo '{"":[';
+echo '[';
 while($row = mysql_fetch_array($result)) {
     echo '{"id":"'.$row["id"].'","day":"'.$row["day"].'","time":"'.$row["time"].'","text":"'.$row["desc"].'"}';
     $i++;
     if ($i < $num_rows) echo ",";
 }
-echo "]}";
+echo "]";
 //close db connection
 mysql_close($link);
 ?>
