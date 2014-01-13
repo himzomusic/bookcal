@@ -16,9 +16,10 @@ description VARCHAR( 100 ) ,
 PRIMARY KEY ( DAY , TIME )
 )
 
---- Insert query
-INSERT INTO bookings VALUES
-('2014-01-11', '09:20', 'noll nio tjugo'),
-('2014-01-11', '09:30', 'noll nio tjugo'),
-('2014-01-11', '10:30', 'tio tjugo'),
-('2014-01-11', '11:30', 'elva tjugo');
+
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user` text NOT NULL,
+  `pass` text NOT NULL,
+  PRIMARY KEY (`id`)
+)

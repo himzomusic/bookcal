@@ -13,7 +13,6 @@ if (!$link) {
 mysql_select_db("bookcal", $link);
 
 //delete from table query
-$sql = "DELETE FROM bookings WHERE day='".$day."' AND time='".$time."'";
 $result = mysql_query("DELETE FROM bookings WHERE day='".$day."' AND time='".$time."'");
 
 //return query result

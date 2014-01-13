@@ -143,26 +143,28 @@ bookcalApp.controller('BookCalCtrl', ['$scope', '$filter', '$timeout', 'httpServ
 }]);
 
 /** Login controller **/
-bookcalApp.controller('LoginCtrl', ['$scope', '$location', '$cookieStore', 'UserService', function ($scope, $location, $cookieStore, User) {
+bookcalApp.controller('LoginCtrl', ['$scope', '$location', '$cookieStore', 'UserService', 'httpService', function ($scope, $location, $cookieStore, User, httpService) {
     //TODO: remove 'test' values from declaration
     $scope.typedUsername = 'test';
     $scope.typedPassword = 'test';
     //TODO: retrieve username and password from the database to verify typed values
     $scope.loginUser = function() {
-        if ($scope.typedUsername == 'test' && $scope.typedPassword == 'test') {
-            User.isLogged = true;
-            User.username = $scope.typedUsername;
-            $cookieStore.put('username', User.username);
-            $cookieStore.put('isLogged', User.isLogged);
-            $location.path('/booking');
-        } else {
-            $scope.typedPassword = '';
-            User.isLogged = false;
-            User.username = '';
-            $cookieStore.remove('username');
-            $cookieStore.remove('isLogged');
-            alert('Felaktiga inloggningsuppgifter!');
-        }
+        httpService.authorize($scope.typedUsername, $scope.typedPassword).then(function(status) {
+           if (status == 200) {
+               User.isLogged = true;
+               User.username = $scope.typedUsername;
+               $cookieStore.put('username', User.username);
+               $cookieStore.put('isLogged', User.isLogged);
+               $location.path('/booking');
+           } else {
+               $scope.typedPassword = '';
+               User.isLogged = false;
+               User.username = '';
+               $cookieStore.remove('username');
+               $cookieStore.remove('isLogged');
+               alert('Felaktiga inloggningsuppgifter!');
+           }
+        });
     };
     $scope.logout = function() {
         User.isLogged = false;
@@ -191,6 +193,14 @@ bookcalApp.factory('httpService', function($http, $filter) {
             return  $http({method: 'POST', url: 'php/deleteBooking.php', data: booking})
                 .then(function(result) {
                     return result.data;
+                });
+        },
+        authorize: function(user, pass) {
+            return  $http({method: 'POST', url: 'php/authorize.php', data: {'user':user, 'pass':pass}})
+                .then(function(data) {
+                    return data.status;
+                }, function(data) {
+                    return data.status;
                 });
         }
     }
