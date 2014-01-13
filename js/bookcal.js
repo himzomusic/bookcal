@@ -101,6 +101,8 @@ bookcalApp.controller('BookCalCtrl', ['$scope', '$filter', '$timeout', 'httpServ
                     alert("Misslyckades att ta bort bokningen från databasen!\n" + data.status_code);
                 }
             });
+        } else {
+            bookingTime.booked = true;
         }
     };
 
