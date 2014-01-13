@@ -3,7 +3,7 @@
 if (!isset($_GET['day']))
     die("Parameter missing");
 //connect to mysql
-$link = mysql_connect("localhost", "root", "1234");
+$link = mysql_connect("localhost", "root", "");
 if (!$link) {
     die('Could not connect: ' . mysql_error());
 }
@@ -20,7 +20,7 @@ header('Content-type: text/json');
 header('Content-type: application/json');
 echo '[';
 while($row = mysql_fetch_array($result)) {
-    echo '{"day":"'.$row["day"].'","time":"'.$row["time"].'","text":"'.$row["description"].'"}';
+    echo '{"day":"'.$row["day"].'","time":"'.$row["time"].'","description":"'.$row["description"].'"}';
     $i++;
     if ($i < $num_rows) echo ",";
 }

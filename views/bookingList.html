@@ -28,10 +28,10 @@
                           <span class="input-group-addon">
                           {{bookingTime.time}}
                           </span>
-                    <input type="text" value="{{bookingTime.text}}" class="form-control booked_{{bookingTime.booked}}" ng-model="bookingTime.text"
-                           ng-change="bookTime(bookingTime)" >
+                    <input type="text" value="{{bookingTime.description}}" class="form-control booked_{{bookingTime.booked}}" ng-model="bookingTime.description"
+                           ng-change="editBooking(bookingTime)" >
                          <span class="input-group-addon">
-                              <input type="checkbox" ng-model="bookingTime.booked" ng-change="removeBooking(bookingTime)">
+                              <input type="checkbox" ng-model="bookingTime.booked" ng-change="bookingChanged(bookingTime)">
                           </span>
                 </div><!-- /input-group -->
             </div><!-- /.col-lg-# -->

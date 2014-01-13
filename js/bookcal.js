@@ -24,7 +24,7 @@ bookcalApp.config(['$routeProvider', function ($routeProvider) {
 }]);
 
 /** Booking controller **/
-bookcalApp.controller('BookCalCtrl', ['$scope', '$http', '$filter', function ($scope, $http, $filter) {
+bookcalApp.controller('BookCalCtrl', ['$scope', '$filter', '$timeout', 'httpService', function ($scope, $filter, $timeout, httpService) {
     $scope.bookingTimes = [];//holds the booking times
     $scope.nextDates = [];//holds a week forward from today
     $scope.currentDate = Date.now();// holds the current selected date
@@ -34,13 +34,17 @@ bookcalApp.controller('BookCalCtrl', ['$scope', '$http', '$filter', function ($s
     $scope.workEnd = 0;
     $scope.bookingInterval = 0;
 
+    //editing timeout for launching db update
+    var editTimeout;
+
+
     //runs when the page is loaded
     var init = function() {
         //Following values are constants and should be in the database and fetched from init
         $scope.workStart = 8;
         $scope.workEnd = 20; //end hour
         $scope.bookingInterval = 20; //interval in minutes. Must be divisible with 60!
-        getBookings();
+        populateList();
 
         //add date buttons
         for (var i=0; i<7; i++) {
@@ -50,42 +54,56 @@ bookcalApp.controller('BookCalCtrl', ['$scope', '$http', '$filter', function ($s
     //increases or decreases the date buy the number of days passed
     $scope.calculateDate = function(numOfDays){
         $scope.currentDate += (numOfDays * 24 * 60 * 60 * 1000);
-        getBookings();
+        populateList();
     };
     //sets the current date to the passed date
     $scope.setDate = function(newDate){
         $scope.currentDate = newDate;
-        getBookings();
+        populateList();
     };
     //books the time
-    $scope.bookTime = function(bookingTime){
-        //TODO: add booking to the database
-        bookingTime.booked = bookingTime.booked || bookingTime.text.length > 0;
-    };
-    //remove booking the time
-    $scope.removeBooking = function(bookingTime){
-        //if the booking time isn't booked just return
-        if (bookingTime.booked)
-            return true;
-        //show the confirmation and wait for answer
-        var confirmText = 'Du har valt att ta bort bokning kl ' + bookingTime.time + (bookingTime.text != '' ? ' (' + bookingTime.text + ')' : '') + '!\n\nVill du verkligen ta bort bokningen?';
-        if (confirm(confirmText)) {
-            //TODO: remove booking from the database
-            bookingTime.text = "";//clear the text
-        } else {
-            bookingTime.booked = true;//reverse action
+    $scope.editBooking = function(bookingTime){
+        $timeout.cancel(editTimeout);
+        bookingTime.booked = bookingTime.booked || bookingTime.description.length > 0;
+        if (bookingTime.booked) {
+            editTimeout = $timeout(function(){
+                httpService.editBooking(bookingTime).then(function(data) {
+                   if (data.status_code != 200) {
+                       alert("Misslyckades att spara bokningen!\n" + data.status_txt);
+                       bookingTime.booked = false;
+                   }
+                });
+            }, 1000);
         }
     };
-    //fetches the bookings for the current date
-    var getBookings = function() {
-        $http({method: 'GET', url: 'getBookings.php?day=' + $filter('date')($scope.currentDate, "yyyy-MM-dd")}).
-            success(function(data) {
-                populateList(data);
-            }).
-            error(function(data) {
-                populateList([]);
-            });
+    //called on checkbox change
+    $scope.bookingChanged = function(bookingTime) {
+        //if the booking time isn't booked just return
+        if (bookingTime.booked)
+            $scope.editBooking(bookingTime);
+        else
+            removeBooking(bookingTime);
+
     };
+
+    //remove booking the time
+    var removeBooking = function(bookingTime){
+        $timeout.cancel(editTimeout);
+        //show the confirmation and wait for answer
+        var confirmText = 'Du har valt att ta bort bokning kl ' + bookingTime.time + (bookingTime.description != '' ? ' (' + bookingTime.description + ')' : '') + '!\n\nVill du verkligen ta bort bokningen?';
+        if (confirm(confirmText)) {
+            httpService.removeBooking(bookingTime).then(function(data) {
+                if (data.status_code == 200) {
+                    bookingTime.booked = false;
+                    bookingTime.description = "";
+                } else {
+                    bookingTime.booked = true;//reverse action
+                    alert("Misslyckades att ta bort bokningen från databasen!\n" + data.status_code);
+                }
+            });
+        }
+    };
+
     //loops through the list of bookings searching for the booking on specific time
     var findByTime = function(dataFromDB, time) {
         for (var i = 0; i < dataFromDB.length; i++) {
@@ -93,28 +111,31 @@ bookcalApp.controller('BookCalCtrl', ['$scope', '$http', '$filter', function ($s
                 return dataFromDB[i];
         }
     };
+
     //populates the bookings list
-    var populateList = function(dataFromDB) {
+    var populateList = function() {
         //clear the list
         $scope.bookingTimes = [];
-
         var bookTime = $scope.workStart = 8;
-        while (bookTime <= $scope.workEnd) {
-            var loops = 60 / $scope.bookingInterval;
-            var loop = 0;
-            while (loop < loops) {
-                //TODO: populate the list with fetched bookings.
-                var formattedTimeForRow = (bookTime < 10 ? '0' : '') + bookTime + ':' + (loop == 0 ? "00" : loop*$scope.bookingInterval);
-                var booking = findByTime(dataFromDB, formattedTimeForRow);
-                if (booking) {
-                    $scope.bookingTimes.push({time:formattedTimeForRow, text:booking.text, booked:true});
-                } else {
-                    $scope.bookingTimes.push({time:formattedTimeForRow, text:'', booked:false});
+
+        httpService.getBookings($scope.currentDate).then(function(data) {
+            dataFromDB = data;
+            while (bookTime <= $scope.workEnd) {
+                var loops = 60 / $scope.bookingInterval;
+                var loop = 0;
+                while (loop < loops) {
+                    var formattedTimeForRow = (bookTime < 10 ? '0' : '') + bookTime + ':' + (loop == 0 ? "00" : loop*$scope.bookingInterval);
+                    var booking = findByTime(dataFromDB, formattedTimeForRow);
+                    if (booking) {
+                        $scope.bookingTimes.push({day:booking.day, time:formattedTimeForRow, description:booking.description, booked:true});
+                    } else {
+                        $scope.bookingTimes.push({day:$filter('date')($scope.currentDate, "yyyy-MM-dd"), time:formattedTimeForRow, description:'', booked:false});
+                    }
+                    loop++;
                 }
-                loop++;
+                bookTime += 1;
             }
-            bookTime += 1;
-        }
+        });
     };
     init();
 }]);
@@ -149,6 +170,29 @@ bookcalApp.controller('LoginCtrl', ['$scope', '$location', '$cookieStore', 'User
         $location.path('/login');
     };
 }]);
+/** http Service **/
+bookcalApp.factory('httpService', function($http, $filter) {
+    return {
+        getBookings: function(date) {
+            return $http({method: 'GET', url: 'php/getBookings.php?day=' + $filter('date')(date, "yyyy-MM-dd")})
+                .then(function(result) {
+                    return result.data;
+                });
+        },
+        editBooking: function(booking) {
+            return  $http({method: 'POST', url: 'php/editBooking.php', data: booking})
+                .then(function(result) {
+                    return result.data;
+                });
+        },
+        removeBooking: function(booking) {
+            return  $http({method: 'POST', url: 'php/deleteBooking.php', data: booking})
+                .then(function(result) {
+                    return result.data;
+                });
+        }
+    }
+});
 
 /** UserService **/
 bookcalApp.factory('UserService', function() {
