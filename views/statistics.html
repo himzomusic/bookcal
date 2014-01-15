@@ -1,0 +1,17 @@
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading">
+            <div>
+                <span style="float: left" ng-controller="LoginCtrl"><a href="" ng-click="logout()">Logga ut</a></span>
+                <span style="float: right"><a ng-href="#/bookings">Bokningar</a></span>
+            </div>
+            <strong>Statistik</strong>
+        </div>
+        <!-- Date buttons -->
+        <div class="panel-body" style="text-align: center">
+            <div>
+                <h3>Totalt</h3>
+                <canvas barchart options="options" data="totalChart" width="500" height="300"></canvas>
+            </div>
+        </div>
+    </div><!-- panel -->

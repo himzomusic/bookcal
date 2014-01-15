@@ -1,7 +1,4 @@
 <?php
-//check if param exists
-if (!isset($_GET['day']))
-    die("Parameter missing");
 //connect to mysql
 $link = mysql_connect("localhost", "root", "");
 if (!$link) {
@@ -9,10 +6,13 @@ if (!$link) {
 }
 mysql_select_db("bookcal", $link);
 
-//read the day from URL
-$day = $_GET['day'];
+if (isset($_GET['day']))
+    $sql = "SELECT * FROM bookings WHERE day='".$_GET['day']."' ORDER BY time asc";
+else 
+    $sql = "SELECT * FROM bookings ORDER BY day, time asc";
+    
 //make a query to database
-$result = mysql_query("SELECT * FROM bookings WHERE day='".$day."' ORDER BY time asc", $link );
+$result = mysql_query($sql, $link );
 $num_rows = mysql_num_rows($result);
 $i = 0;
 //print JSON

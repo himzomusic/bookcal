@@ -1,6 +1,10 @@
     <div class="panel panel-default">
         <!-- Default panel contents -->
         <div class="panel-heading">
+            <div>
+                <span style="float: left" ng-controller="LoginCtrl"><a href="" ng-click="logout()">Logga ut</a></span>
+                <span style="float: right"><a ng-href="#/stats">Statistik</a></span>
+            </div>
             <!-- Previous button -->
             <button type="button" class="btn btn-default btn-sm" ng-click="calculateDate(-1)">
                 <span class="glyphicon glyphicon-step-backward"></span>
@@ -11,7 +15,6 @@
             <button type="button" class="btn btn-default btn-sm" ng-click="calculateDate(1)">
                 <span class="glyphicon glyphicon-step-forward"></span>
             </button>
-            <div style="float:left;" ng-controller="LoginCtrl"><a href="" ng-click="logout()">Logga ut</a></div>
         </div>
         <!-- Date buttons -->
         <div class="panel-body" style="text-align: center">

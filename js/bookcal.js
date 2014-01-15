@@ -1,5 +1,5 @@
 /** App init **/
-var bookcalApp = angular.module('bookcalApp', ['ngRoute', 'ngCookies']);
+var bookcalApp = angular.module('bookcalApp', ['ngRoute', 'ngCookies', 'angles']);
 
 /*** Router **/
 bookcalApp.config(['$routeProvider', function ($routeProvider) {
@@ -14,6 +14,13 @@ bookcalApp.config(['$routeProvider', function ($routeProvider) {
         .when('/booking', {
             templateUrl: 'views/bookingList.html',
             controller: 'BookCalCtrl',
+            access: {
+                isFree: false
+            }
+        })
+        .when('/stats', {
+            templateUrl: 'views/statistics.html',
+            controller: 'StatisticsCtrl',
             access: {
                 isFree: false
             }
@@ -73,7 +80,7 @@ bookcalApp.controller('BookCalCtrl', ['$scope', '$filter', '$timeout', 'httpServ
                        bookingTime.booked = false;
                    }
                 });
-            }, 1000);
+            }, 500);
         }
     };
     //called on checkbox change
@@ -174,11 +181,51 @@ bookcalApp.controller('LoginCtrl', ['$scope', '$location', '$cookieStore', 'User
         $location.path('/login');
     };
 }]);
-/** http Service **/
+/** Login controller **/
+bookcalApp.controller('StatisticsCtrl', ['$scope', '$filter', 'httpService', function ($scope, $filter, httpService) {
+    var totalChartLabels = [];
+    var totalChartData = [];
+    
+    var getAllBookings = function() {
+        httpService.getBookings("").then(function(data) {
+            var label = "";
+            var bookings = 0;
+            for (var i = 0; i < data.length; i++) {
+                $filter('date')(data[i].day, "m")
+                label = $filter('date')(data[i].day, "MMM") + " '" + $filter('date')(data[i].day, "yy");
+                if (totalChartLabels.length == 0 || totalChartLabels[totalChartLabels.length - 1] != label) {
+                    if (totalChartLabels.length > 0) {
+                        totalChartData.push(bookings);
+                        totalChartLabels[totalChartLabels.length - 1] = totalChartLabels[totalChartLabels.length - 1] + " (" + bookings + ")";
+                    }
+                    totalChartLabels.push(label);
+                    bookings = 0;
+                }
+                bookings++;
+            }
+            totalChartLabels[totalChartLabels.length - 1] = totalChartLabels[totalChartLabels.length - 1] + " (" + bookings + ")";
+            totalChartData.push(bookings);
+        });
+    };
+    
+    $scope.totalChart = {
+        labels : totalChartLabels,
+        datasets : [
+            {
+                fillColor : "rgba(151,187,205,0.5)",
+                strokeColor : "rgba(151,187,205,1)",
+                data : totalChartData
+            }
+        ], 
+    };
+    getAllBookings();    
+}]);
+
+/** httpService **/
 bookcalApp.factory('httpService', function($http, $filter) {
     return {
         getBookings: function(date) {
-            return $http({method: 'GET', url: 'php/getBookings.php?day=' + $filter('date')(date, "yyyy-MM-dd")})
+            return $http({method: 'GET', url: 'php/getBookings.php?' + (date ? 'day=' + $filter('date')(date, "yyyy-MM-dd") : "")})
                 .then(function(result) {
                     return result.data;
                 });
@@ -217,7 +264,7 @@ bookcalApp.factory('UserService', function() {
 /** Directive checking login status **/
 bookcalApp.run(['$rootScope', '$location', '$cookieStore', 'UserService', function ($root, $location, $cookieStore, User) {
     $root.$on('$routeChangeStart', function(event, currRoute, prevRoute){
-        if (!currRoute.access.isFree && (!User.isLogged && !$cookieStore.get('isLogged'))) {
+        if (currRoute.access && !currRoute.access.isFree && (!User.isLogged && !$cookieStore.get('isLogged'))) {
             $location.path('/login');
         }
     });
