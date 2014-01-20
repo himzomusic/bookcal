@@ -152,8 +152,8 @@ bookcalApp.controller('BookCalCtrl', ['$scope', '$filter', '$timeout', 'httpServ
 /** Login controller **/
 bookcalApp.controller('LoginCtrl', ['$scope', '$location', '$cookieStore', 'UserService', 'httpService', function ($scope, $location, $cookieStore, User, httpService) {
     //TODO: remove 'test' values from declaration
-    $scope.typedUsername = 'test';
-    $scope.typedPassword = 'test';
+    $scope.typedUsername = '';
+    $scope.typedPassword = '';
     //TODO: retrieve username and password from the database to verify typed values
     $scope.loginUser = function() {
         httpService.authorize($scope.typedUsername, $scope.typedPassword).then(function(status) {
