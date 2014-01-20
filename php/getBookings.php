@@ -1,10 +1,10 @@
 <?php
 //connect to mysql
-$link = mysql_connect("localhost", "root", "");
+$link = mysql_connect("localhost", "root", "");//("db.cendre.se", "wse657003", "cendre2013")
 if (!$link) {
     die('Could not connect: ' . mysql_error());
 }
-mysql_select_db("bookcal", $link);
+mysql_select_db("bookcal", $link);//"wse657003", $link
 
 if (isset($_GET['day']))
     $sql = "SELECT * FROM bookings WHERE day='".$_GET['day']."' ORDER BY time asc";

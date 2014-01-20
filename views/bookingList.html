@@ -10,7 +10,7 @@
                 <span class="glyphicon glyphicon-step-backward"></span>
             </button>
             <!-- Title -->
-            &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{currentDate | date:'yyyy-MM-dd'}}</strong>&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{day}} {{currentDate | date:'yyyy-MM-dd'}}</strong>&nbsp;&nbsp;&nbsp;&nbsp;
             <!-- Next button -->
             <button type="button" class="btn btn-default btn-sm" ng-click="calculateDate(1)">
                 <span class="glyphicon glyphicon-step-forward"></span>
@@ -19,9 +19,9 @@
         <!-- Date buttons -->
         <div class="panel-body" style="text-align: center">
             <div class="btn-group  btn-group-sm">
-                <button type="button" class="btn btn-default" ng-click="setDate(nextDate)"
-                        ng-disabled="currentDate==nextDate" ng-repeat="nextDate in nextDates">
-                    {{nextDate | date:'dd/MM'}}</button>
+                <button type="button" class="btn btn-default" ng-click="setDate(nextDate.date)"
+                        ng-disabled="currentDate==nextDate.date" ng-repeat="nextDate in nextDates">{{nextDate.day}}
+                    {{nextDate.date | date:'dd/MM'}}</button>
             </div>
         </div>
         <!-- Booking rows -->

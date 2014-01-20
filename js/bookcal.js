@@ -32,9 +32,12 @@ bookcalApp.config(['$routeProvider', function ($routeProvider) {
 
 /** Booking controller **/
 bookcalApp.controller('BookCalCtrl', ['$scope', '$filter', '$timeout', 'httpService', function ($scope, $filter, $timeout, httpService) {
+    var days = ["Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"];
     $scope.bookingTimes = [];//holds the booking times
     $scope.nextDates = [];//holds a week forward from today
     $scope.currentDate = Date.now();// holds the current selected date
+    $scope.day = days[(new Date($scope.currentDate)).getDay()];
+    
 
     //Following values are constants and should be in the database and fetched from init
     $scope.workStart = 0;
@@ -55,17 +58,20 @@ bookcalApp.controller('BookCalCtrl', ['$scope', '$filter', '$timeout', 'httpServ
 
         //add date buttons
         for (var i=0; i<7; i++) {
-            $scope.nextDates.push(Date.now() + (i * 24 * 60 * 60 * 1000));
+            var d = Date.now() + (i * 24 * 60 * 60 * 1000);
+            $scope.nextDates.push({day: days[new Date(d).getDay()], date:d});
         }
     };
     //increases or decreases the date buy the number of days passed
     $scope.calculateDate = function(numOfDays){
         $scope.currentDate += (numOfDays * 24 * 60 * 60 * 1000);
+        $scope.day = days[(new Date($scope.currentDate)).getDay()];
         populateList();
     };
     //sets the current date to the passed date
     $scope.setDate = function(newDate){
         $scope.currentDate = newDate;
+        $scope.day = days[(new Date($scope.currentDate)).getDay()];
         populateList();
     };
     //books the time
