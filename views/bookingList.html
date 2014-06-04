@@ -1,4 +1,4 @@
-    <div class="panel panel-default">
+    <div class="panel panel-default red-{{day=='S&ouml;n'}}">
         <!-- Default panel contents -->
         <div class="panel-heading">
             <div>
@@ -19,7 +19,7 @@
         <!-- Date buttons -->
         <div class="panel-body" style="text-align: center">
             <div class="btn-group  btn-group-sm">
-                <button type="button" class="btn btn-default" ng-click="setDate(nextDate.date)"
+                <button type="button" class="btn btn-default red-{{nextDate.day=='S&ouml;n'}}" ng-click="setDate(nextDate.date)"
                         ng-disabled="currentDate==nextDate.date" ng-repeat="nextDate in nextDates">{{nextDate.day}}
                     {{nextDate.date | date:'dd/MM'}}</button>
             </div>

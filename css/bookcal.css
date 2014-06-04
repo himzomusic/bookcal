@@ -1,6 +1,9 @@
 body {
     background-color: lightgoldenrodyellow !important;
 }
+.red-true {
+    background-color: #E8ADAA !important; 
+}
 .panel-heading {
     text-align: center;
     font-size: 12pt;
